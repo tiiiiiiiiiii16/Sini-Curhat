@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ruang Curhat - Virtual Venting Wall</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,600;1,400&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #fcf8f5; /* Cream warm background */
+            color: #4a403b;
+        }
+        .font-serif-custom {
+            font-family: 'Playfair Display', serif;
+        }
+        /* Custom memo card shadow & rotation effect */
+        .memo-card {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .memo-card:hover {
+            transform: translateY(-4px) rotate(0deg) !important;
+            box-shadow: 0 12px 25px -5px rgba(184, 149, 133, 0.2);
+        }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f7f1ec;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #d8c5b8;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between selection:bg-rose-200 selection:text-rose-900">
+
+    <header class="w-full bg-[#f7f1ec]/80 backdrop-blur-md border-b border-[#e8dcd3] sticky top-0 z-50 px-6 py-4">
+        <div class="max-w-5xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div class="flex items-center space-x-3">
+                <span class="text-2xl">✨</span>
+                <div>
+                    <h1 class="font-serif-custom text-xl font-bold text-[#635249]">Ruang Curhat</h1>
+                    <p class="text-xs text-[#8c7a70]">Tempat aman menumpahkan isi hati secara rahasia</p>
+                </div>
+            </div>
+
+            <!-- Music Player Widget -->
+            <div class="flex items-center space-x-3 bg-white/80 px-4 py-2 rounded-full border border-[#e8dcd3] shadow-sm">
+                <button id="musicToggleBtn" onclick="toggleMusic()" class="w-8 h-8 rounded-full bg-[#e3b5a4] text-white flex items-center justify-center hover:bg-[#d49e8b] transition-colors focus:outline-none">
+                    ♪
+                </button>
+                <div class="text-xs">
+                    <p id="musicStatus" class="font-medium text-[#635249]">Lo-Fi Chill (Simulated)</p>
+                    <p class="text-[10px] text-[#a69488]">Klik untuk putar/jeda musik</p>
+                </div>
+                <!-- Hidden Audio Element for real lo-fi link or synthetic feedback -->
+                <audio id="bgAudio" loop crossorigin="anonymous">
+                    <!-- Menggunakan sumber audio publik bebas hak cipta untuk lofi/ambient -->
+                    <source src="https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf756.mp3?filename=lofi-study-112191.mp3" type="audio/mpeg">
+                </audio>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-5xl w-full mx-auto px-4 py-8 flex-grow grid grid-cols-1 md:grid-cols-3 gap-8">
+        
+        <!-- Left Column: Form Curhat -->
+        <section class="md:col-span-1 bg-white p-6 rounded-3xl border border-[#e8dcd3] shadow-sm h-fit sticky top-24">
+            <h2 class="font-serif-custom text-lg font-bold text-[#5c4a42] mb-1 flex items-center gap-2">
+                <span>📝</span> Tulis Curhatanmu
+            </h2>
+            <p class="text-xs text-[#8c7a70] mb-5">Apa yang sedang kamu rasakan hari ini? Tenang, identitasmu aman.</p>
+
+            <form id="confessionForm" onsubmit="handleFormSubmit(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-[#6e5b52] mb-1">Nama / Alias (Opsional)</label>
+                    <input type="text" id="authorInput" placeholder="Contoh: si penat, anonim, or Bunga" 
+                        class="w-full px-3 py-2.5 text-sm bg-[#fcf8f5] border border-[#e8dcd3] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#d49e8b] transition-all text-[#4a403b]">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-[#6e5b52] mb-1">Kategori Hati</label>
+                    <select id="categoryInput" class="w-full px-3 py-2.5 text-sm bg-[#fcf8f5] border border-[#e8dcd3] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#d49e8b] transition-all text-[#4a403b]">
+                        <option value="Sedih"> Sedih </option>
+                        <option value="Galau"> Galau / Overthinking</option>
+                        <option value="Semangat"> Semangat </option>
+                        <option value="Random"> Random / Uneg-uneg</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-[#6e5b52] mb-1">Isi Curhatan <span class="text-rose-400">*</span></label>
+                    <textarea id="contentInput" rows="4" required placeholder="Tuliskan uneg-uneg, beban pikiran, atau ceritamu di sini..." 
+                        class="w-full px-3 py-2.5 text-sm bg-[#fcf8f5] border border-[#e8dcd3] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#d49e8b] transition-all text-[#4a403b] resize-none"></textarea>
+                </div>
+
+                <button type="submit" id="submitBtn" 
+                    class="w-full py-3 bg-[#bda395] hover:bg-[#ab8e80] text-white text-sm font-semibold rounded-xl shadow-sm transition-all transform active:scale-95 flex items-center justify-center gap-2">
+                    <span>Kirim Curhatan</span>
+                    <span>💌</span>
+                </button>
+            </form>
+        </section>
+
+        <!-- Right Column: Confession Wall (Grid Memo Cards) -->
+        <section class="md:col-span-2 flex flex-col gap-4">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-white p-4 rounded-2xl border border-[#e8dcd3] gap-3">
+                <div>
+                    <h3 class="font-serif-custom font-bold text-[#5c4a42]">Dinding Curhat Publik</h3>
+                    <p class="text-xs text-[#8c7a70]">Mendengar dan berbagi cerita dari sesama pengunjung.</p>
+                </div>
+                <!-- Filter Kategori -->
+                <div class="flex flex-wrap gap-1.5">
+                    <button onclick="filterCurhat('Semua')" id="filter-Semua" class="filter-btn text-xs px-3 py-1.5 rounded-lg bg-[#bda395] text-white font-medium transition-all">Semua</button>
+                    <button onclick="filterCurhat('Sedih')" id="filter-Sedih" class="filter-btn text-xs px-3 py-1.5 rounded-lg bg-[#f7f1ec] text-[#6e5b52] hover:bg-[#e8dcd3] font-medium transition-all">Sedih</button>
+                    <button onclick="filterCurhat('Galau')" id="filter-Galau" class="filter-btn text-xs px-3 py-1.5 rounded-lg bg-[#f7f1ec] text-[#6e5b52] hover:bg-[#e8dcd3] font-medium transition-all">Galau</button>
+                    <button onclick="filterCurhat('Semangat')" id="filter-Semangat" class="filter-btn text-xs px-3 py-1.5 rounded-lg bg-[#f7f1ec] text-[#6e5b52] hover:bg-[#e8dcd3] font-medium transition-all">Semangat</button>
+                    <button onclick="filterCurhat('Random')" id="filter-Random" class="filter-btn text-xs px-3 py-1.5 rounded-lg bg-[#f7f1ec] text-[#6e5b52] hover:bg-[#e8dcd3] font-medium transition-all">Random</button>
+                </div>
+            </div>
+
+            <!-- Container Grid Kartu Curhat -->
+            <div id="wallContainer" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <!-- Javascript akan merender kartu curhat di sini secara dinamis -->
+            </div>
+        </section>
+    </main>
+
+    <footer class="w-full text-center py-6 text-xs text-[#8c7a70] border-t border-[#e8dcd3] mt-10">
+        <p>Dibuat dengan ❤️ untuk sarana belajar koding HTML, CSS, dan JavaScript interaktif.</p>
+    </footer>
+
+    <script>
+        // Data Awal (Default Curhat) jika localStorage masih kosong
+        const defaultCurhats = [
+            {
+                id: 1,
+                author: "aku",
+                category: "Sedih",
+                content: "Hari ini rasanya melelahkan banget. Ekspektasi ke diri sendiri terlalu tinggi sampai lupa kalau aku juga manusia yang butuh istirahat.",
+                date: "Hari ini, 14:20",
+                likes: 12
+            },
+            {
+                id: 2,
+                author: "mahasigma",
+                category: "Galau",
+                content: "Bingung sama arah hidup aku, cuman bisa pasrah aja sama keadaan:(.",
+                date: "Hari ini, 15:00",
+                likes: 8
+            },
+            {
+                id: 3,
+                author: "bocil replay",
+                category: "Semangat",
+                content: "Buat siapa pun yang lagi ngerasa down hari ini: peluk jauh! Ingat badai pasti berlalu, kamu sudah hebat bertahan sejauh ini.",
+                date: "Hari ini, 11:55",
+                likes: 25
+            },
+            {
+                id: 4,
+                author: "Kocheng Oyen",
+                category: "Random",
+                content: "enak banget keknya jadi kocheng meong meong doang dikasih wiskas.",
+                date: "Hari ini, 12.00",
+                likes: 19
+            }
+        ];
+
+        // Variabel state aplikasi
+        let curhatList = [];
+        let activeFilter = 'Semua';
+        let isPlayingMusic = false;
+
+        // Warna latar belakang memo berdasarkan kategori (nuansa pastel cute)
+        const categoryColors = {
+            "Sedih": "bg-[#eef2f5] border-[#d1dee8] text-[#3c5063]",
+            "Galau": "bg-[#faf0f2] border-[#f0d6dc] text-[#633c46]",
+            "Semangat": "bg-[#f3f7f0] border-[#d8e8cd] text-[#425e37]",
+            "Random": "bg-[#fbf7f0] border-[#f0e2d0] text-[#63533c]"
+        };
+
+        // Saat halaman dimuat (onload)
+        window.onload = function() {
+            loadDataFromStorage();
+            renderWall();
+        };
+
+        // Fungsi mengambil data dari localStorage
+        function loadDataFromStorage() {
+            const savedData = localStorage.getItem('ruang_curhat_data');
+            if (savedData) {
+                try {
+                    curhatList = JSON.parse(savedData);
+                } catch (e) {
+                    curhatList = defaultCurhats;
+                }
+            } else {
+                curhatList = defaultCurhats;
+                saveDataToStorage();
+            }
+        }
+
+        // Fungsi menyimpan data ke localStorage
+        function saveDataToStorage() {
+            localStorage.setItem('ruang_curhat_data', JSON.stringify(curhatList));
+        }
+
+        // Menangani submit form curhatan baru
+        function handleFormSubmit(event) {
+            event.preventDefault(); // Mencegah reload halaman standar form
+
+            const authorInput = document.getElementById('authorInput').value.trim();
+            const categoryInput = document.getElementById('categoryInput').value;
+            const contentInput = document.getElementById('contentInput').value.trim();
+
+            if (!contentInput) return;
+
+            const newCurhat = {
+                id: Date.now(),
+                author: authorInput !== "" ? authorInput : "Anonim",
+                category: categoryInput,
+                content: contentInput,
+                date: "Baru saja",
+                likes: 0
+            };
+
+            // Masukkan ke urutan paling depan array
+            curhatList.unshift(newCurhat);
+            saveDataToStorage();
+
+            // Reset form input
+            document.getElementById('confessionForm').reset();
+
+            // Render ulang tampilan dinding curhat
+            renderWall();
+            
+            // Berikan sedikit efek visual sukses pada tombol
+            const btn = document.getElementById('submitBtn');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = "<span>Berhasil Dikirim!</span> <span>✨</span>";
+            btn.classList.add('bg-[#9bb398]');
+            setTimeout(() => {
+                btn.innerHTML = originalText;
+                btn.classList.remove('bg-[#9bb398]');
+            }, 2000);
+        }
+
+        // Fungsi Filter Kategori
+        function filterCurhat(category) {
+            activeFilter = category;
+            
+            // Ubah gaya tombol filter aktif
+            const buttons = document.querySelectorAll('.filter-btn');
+            buttons.forEach(btn => {
+                if(btn.id === `filter-${category}`) {
+                    btn.className = "filter-btn text-xs px-3 py-1.5 rounded-lg bg-[#bda395] text-white font-medium transition-all shadow-sm";
+                } else {
+                    btn.className = "filter-btn text-xs px-3 py-1.5 rounded-lg bg-[#f7f1ec] text-[#6e5b52] hover:bg-[#e8dcd3] font-medium transition-all";
+                }
+            });
+
+            renderWall();
+        }
+
+        // Fungsi Like/Dukung Curhatan
+        function likeCurhat(id) {
+            const item = curhatList.find(c => c.id === id);
+            if (item) {
+                item.likes += 1;
+                saveDataToStorage();
+                renderWall();
+            }
+        }
+
+        // Fungsi Render Dinding Curhat ke HTML
+        function renderWall() {
+            const container = document.getElementById('wallContainer');
+            container.innerHTML = "";
+
+            // Filter data sesuai pilihan
+            const filteredList = activeFilter === 'Semua' 
+                ? curhatList 
+                : curhatList.filter(item => item.category === activeFilter);
+
+            if (filteredList.length === 0) {
+                container.innerHTML = `
+                    <div class="col-span-full py-12 text-center bg-white rounded-3xl border border-[#e8dcd3]">
+                        <p class="text-3xl mb-2">🍃</p>
+                        <p class="text-sm font-medium text-[#6e5b52]">Belum ada curhatan di kategori ini.</p>
+                        <p class="text-xs text-[#a69488]">Jadilah yang pertama menuangkan isi hati!</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // Looping data dan buat elemen kartu memo aesthetic
+            filteredList.forEach((item, index) => {
+                const colorClass = categoryColors[item.category] || "bg-white border-[#e8dcd3] text-[#4a403b]";
+                // Berikan sedikit rotasi acak biar kesan memo catatan tempel (post-it) lebih natural
+                const rotations = ["rotate-1", "-rotate-1", "rotate-0", "rotate-2", "-rotate-2"];
+                const randomRot = rotations[index % rotations.length];
+
+                const cardHTML = `
+                    <div class="memo-card ${colorClass} p-5 rounded-2xl border shadow-sm flex flex-col justify-between ${randomRot}">
+                        <div>
+                            <div class="flex justify-between items-center mb-3">
+                                <span class="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-white/60 border border-current/20">
+                                    ${item.category}
+                                </span>
+                                <span class="text-[10px] opacity-70">${item.date}</span>
+                            </div>
+                            <p class="text-sm leading-relaxed mb-4 font-normal whitespace-pre-line">${escapeHTML(item.content)}</p>
+                        </div>
+                        <div class="flex justify-between items-center pt-3 border-t border-current/10 text-xs">
+                            <span class="font-medium italic">~ ${escapeHTML(item.author)}</span>
+                            <button onclick="likeCurhat(${item.id})" class="flex items-center gap-1 bg-white/70 hover:bg-white px-2.5 py-1 rounded-full shadow-xs transition-colors">
+                                <span>🤍</span>
+                                <span class="font-semibold">${item.likes}</span>
+                            </button>
+                        </div>
+                    </div>
+                `;
+                container.innerHTML += cardHTML;
+            });
+        }
+
+        // Fungsi keamanan mencegah XSS sederhana pada input teks
+        function escapeHTML(str) {
+            return str.replace(/[&<>'"]/g, 
+                tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag)
+            );
+        }
+
+        // Fungsi Player Musik Lofi sederhana
+        function toggleMusic() {
+            const audio = document.getElementById('bgAudio');
+            const statusText = document.getElementById('musicStatus');
+            const toggleBtn = document.getElementById('musicToggleBtn');
+
+            if (isPlayingMusic) {
+                audio.pause();
+                isPlayingMusic = false;
+                statusText.innerText = "Lo-Fi Dipause";
+                toggleBtn.innerText = "♪";
+                toggleBtn.classList.remove('bg-[#d49e8b]');
+                toggleBtn.classList.add('bg-[#e3b5a4]');
+            } else {
+                audio.play().then(() => {
+                    isPlayingMusic = true;
+                    statusText.innerText = "Memutar Lo-Fi Chill...";
+                    toggleBtn.innerText = "⏸";
+                    toggleBtn.classList.remove('bg-[#e3b5a4]');
+                    toggleBtn.classList.add('bg-[#d49e8b]');
+                }).catch(e => {
+                    // Handle autoplay restriction dari browser jika ada
+                    statusText.innerText = "Gagal memutar otomatis";
+                    console.error(e);
+                });
+            }
+        }
+    </script>
+</body>
+</html>
